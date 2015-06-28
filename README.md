@@ -15,7 +15,7 @@ Things to do:
 
 ! A lot of the code is unnecessary, but my priority lies somewhere else
 
-Please notice the LICENSE and keep in mind that the module is currently very unstable. It cannot even be called a module yet.
+Please notice the LICENSE and keep in mind that the module is currently very unstable. It cannot even be called a module yet. Also, the login process is NOT dynamic (yet). So if you get an error, you have to fix it yourself. I'm working on making it dynamic.
 
 # Usage
 
