@@ -18,3 +18,7 @@ Please notice the LICENSE and keep in mind that the module is currently very uns
 # Usage
 
 There is only one way to use the module now: don't use it as an module. Just open the .py file with Python 3 and scroll down the document and replace the login credentials with your own. Run the script and you will login, there is not much else you can do as of now.
+
+# Requirements.
+
+Python 3 and the PyCrypto module to process the RSA key. That's it.
