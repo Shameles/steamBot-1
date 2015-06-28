@@ -10,6 +10,7 @@ Things to do:
 - Change profile details
 - Clean up code (!)
 - Add command-line options
+- Handle CAPTCHA
 
 ! A lot of the code is unnecessary, but my priority lies somewhere else
 
