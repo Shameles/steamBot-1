@@ -34,14 +34,15 @@ class steamBot():
         headers = str(response.info())
 
         SESSION_ID=headers[headers.find('sessionid') + 10:headers.find('sessionid') + 34]
-
-        print('[X] Session ID: ' + SESSION_ID)
+        print('- Session ID: ' + SESSION_ID)
+        
         STEAM_COUNTRY=headers[headers.find('steamCountry') + 13:headers.find('steamCountry') + 50]
-
-        print('[X] Country: ' + STEAM_COUNTRY[0:2])
+        print('- Country: ' + STEAM_COUNTRY[0:2])
 
         # Request an RSA key
 
+        print('[X] Requesting RSA Key')
+        
         url = 'https://steamcommunity.com/login/getrsakey/'
         values = {'username' : username, 'donotcache' : str(int(time.time()*1000))}
         post = urllib.parse.urlencode(values)
@@ -66,7 +67,10 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
 
         mod = int(str(data['publickey_mod']), 16)
+        print('- MOD: ' + str(mod)[0:11] + '...')
+        
         exp = int(str(data['publickey_exp']), 16)
+        print('- EXP: ' + str(exp))
 
         rsa_key = RSA.construct((mod, exp))
         rsa = PKCS1_v1_5.new(rsa_key)
@@ -74,6 +78,8 @@ class steamBot():
         encrypted_password = base64.b64encode(encrypted_password)
 
         # Do the login
+
+        print('[X] Attempting login')
 
         url = 'https://steamcommunity.com/login/dologin'
         values = {'password' : encrypted_password.decode('utf-8'),
@@ -107,13 +113,18 @@ class steamBot():
 
         # Process the data
         data = json.loads(response.decode('utf-8'))
-        print(data)
+
+        if data['emailauth_needed'] == True:
+            print('- Result: Email-authentication needed')
+            print('- E-mail: ...' + data['emaildomain'])
 
         EMAIL_STEAM_ID = str(data['emailsteamid'])
 
         # Here we have to solve the e-mail auth
 
         # Request an RSA key again
+
+        print('[X] Requesting RSA Key')
 
         url = 'https://steamcommunity.com/login/getrsakey/'
         values = {'username' : username, 'donotcache' : str(int(time.time()*1000))}
@@ -139,7 +150,10 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
 
         mod = int(str(data['publickey_mod']), 16)
+        print('- MOD: ' + str(mod)[0:11] + '...')
+        
         exp = int(str(data['publickey_exp']), 16)
+        print('- EXP: ' + str(exp))
 
         rsa_key = RSA.construct((mod, exp))
         rsa = PKCS1_v1_5.new(rsa_key)
@@ -147,6 +161,8 @@ class steamBot():
         encrypted_password = base64.b64encode(encrypted_password)
                   
         # Do the login again
+
+        print('[X] Attempting login')
 
         url = 'https://steamcommunity.com/login/dologin'
         values = {'password' : encrypted_password.decode('utf-8'),
@@ -181,6 +197,16 @@ class steamBot():
         #Process the data
 
         data = json.loads(response.decode('utf-8'))
-        print(data)
+
+        if data['success'] == True:
+            print('[X] Login succesful!')
+            print('- Secure token: ' + data['transfer_parameters']['token_secure'][0:11] + '...')
+            print('- Token: ' + data['transfer_parameters']['token'][0:11] + '...')
+            print('- Webcookie: ' + data['transfer_parameters']['webcookie'][0:11] + '...')
+            print('- Auth: ' + data['transfer_parameters']['auth'][0:11] + '...')
+        else:
+            print('[X] Login failed!')
+            
+            
 
 steamBot('yourusername', 'yourpassword')
