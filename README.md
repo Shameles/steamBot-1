@@ -11,6 +11,7 @@ Things to do:
 - Clean up code (!)
 - Add command-line options
 - Handle CAPTCHA
+- Add automatic E-mail reader
 
 ! A lot of the code is unnecessary, but my priority lies somewhere else
 
