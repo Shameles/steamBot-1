@@ -19,14 +19,7 @@ class steamBot():
         values = {}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
-        headers = {'Accept' : 'text/html, application/xhtml+xml, */*',
-                   'Accept-Language' : 'nl-NL',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'Host' : 'steamcommunity.com',
-                   'DNT' : '1',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache'}
+        headers = {}
         request = urllib.request.Request(url, binary_data, headers)
         response = urllib.request.urlopen(request)
 
@@ -47,19 +40,7 @@ class steamBot():
         values = {'username' : username, 'donotcache' : str(int(time.time()*1000))}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
-        headers = {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
-                   'Referer' : 'https://steamcommunity.com/login/home/?goto=0',
-                   'Accept-Language' : 'nl-NL',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'DNT' : '1',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache',
-                   'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
+        headers = {'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
         request = urllib.request.Request(url, binary_data, headers)
         response = urllib.request.urlopen(request).read()
 
@@ -93,19 +74,7 @@ class steamBot():
                   'rsatimestamp' : str(data['timestamp']),
                   'remember_login' : 'false',
                   'donotcache' : str(int(time.time()*1000))}
-        headers = {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
-                   'Referer' : 'https://steamcommunity.com/login/home/?goto=0',
-                   'Accept-Language' : 'nl-NL',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'DNT' : '1',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache',
-                   'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
+        headers = {'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
@@ -130,19 +99,7 @@ class steamBot():
         values = {'username' : username, 'donotcache' : str(int(time.time()*1000))}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
-        headers = {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
-                   'Referer' : 'https://steamcommunity.com/login/home/?goto=0',
-                   'Accept-Language' : 'nl-NL',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'DNT' : '1',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache',
-                   'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
+        headers = {'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
         request = urllib.request.Request(url, binary_data, headers)
         response = urllib.request.urlopen(request).read()
 
@@ -176,19 +133,7 @@ class steamBot():
                   'rsatimestamp' : str(data['timestamp']),
                   'remember_login' : 'false',
                   'donotcache' : str(int(time.time()*1000))}
-        headers = {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
-                   'Referer' : 'https://steamcommunity.com/login/home/?goto=0',
-                   'Accept-Language' : 'nl-NL',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'DNT' : '1',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache',
-                   'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
+        headers = {'Cookie' : 'sessionid=' + SESSION_ID + '; ' + 'steamCountry=' + STEAM_COUNTRY + '; ' + 'timezoneOffset=7200,0;'}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
