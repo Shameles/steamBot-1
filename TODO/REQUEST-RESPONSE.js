@@ -252,7 +252,5 @@ new Ajax.Request( 'http://steamcommunity.com/market/priceoverview/', {
 // Selling an item
 // Request example: sessionid=31da671dc3c57f6123h90609&appid=440&contextid=2&assetid=1117952592&amount=1&price=58 (PRICE IS WHAT YOU RECEIVE)
 // Response example: [] (not yet known, having problems sending these)
-Javascript code unknown. Help is appreciated.
-
 
 
