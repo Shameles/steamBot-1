@@ -1,26 +1,30 @@
-# PySteam
+![Steam icon](http://i.imgur.com/9ca9yl7.png) steamBot
+=====
 
-PySteam is a module that you can use to communicate with the steam market. It is currently under development and it currently has no use yet. Only the login process has been included yet but more will follow.
+steamBot is a **Python(3)** module, it offers the user to create automated steam market bots that create offers themsleves depending on the current status of the market. No user participation is needed after the bot is coded correctly.
 
-Things done:
-- Login process
+***
+The module is still being coded and is not even near to ready, this is what is already done:
+> - Fetching sessionID and country
+> - Fetching an RSA key
+> - Logging in
+> - Placing a buy order
 
-Things to do:
-- Steam market
-- Change profile details
-- Clean up code (!)
-- Add command-line options
-- Handle CAPTCHA
-- Add automatic E-mail reader
+As said, not a lot has been done yet, this is what you can expect:
 
-! A lot of the code is unnecessary, but my priority lies somewhere else
+> - Fetching market data (per item)
+> - Changing account details of the bot
+> - Cancelling buy orders
+> - Creating a bot with the module itself
+> - Handling other unknown (login) errors (like Captcha)
+> - Fetching the Steam Guard code from e-mail
 
-Please notice the LICENSE and keep in mind that the module is currently very unstable. It cannot even be called a module yet. Also, the login process is NOT dynamic (yet). So if you get an error, you have to fix it yourself. I'm working on making it dynamic.
+***
+### License and ToS
+Not only does this repository have a license, but the steamBot might also not be in line with the Steam Terms of Service. The license is in the repository and you can check out the Steam Terms of Service [here][1].
 
-# Usage
+### Requirements.
 
-There is only one way to use the module now: don't use it as an module. Just open the .py file with Python 3 and scroll down the document and replace the login credentials with your own. Run the script and you will login, there is not much else you can do as of now.
+Python 3 and the PyCrypto module to process the RSA key, and a logical mind. I am not sure if market bots are allowed, but logically thinking they aren't. So be cautious, as accounts **do** get banned.
 
-# Requirements.
-
-Python 3 and the PyCrypto module to process the RSA key. That's it.
+[1]: http://store.steampowered.com/subscriber_agreement/
