@@ -7,6 +7,7 @@ import webbrowser
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
+
 # Construct and install the HTTP(cookiejar)-Opener
 cj = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -112,7 +113,6 @@ class steamBot():
         headers = {'Accept' : '*/*',
                    'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
                    'Referer' : 'http://steamcommunity.com/market/listings/730/Chroma%202%20Case',
-                   'Accept-Language' : 'nl-NL',
                    'Origin' : 'http://steamcommunity.com',
                    'Accept-Encoding' : 'gzip, deflate',
                    'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
@@ -124,12 +124,40 @@ class steamBot():
         request = urllib.request.Request(url, binary_data, headers)
         response = urllib.request.urlopen(request).read()
         
-        #data = json.loads(response.decode('utf-8'))
-        return response.decode('utf-8')
+        data = json.loads(response.decode('utf-8'))
+        return data
 
-# Command the bot here, this is just an example!
+    def cancelOrder(self, buyorderid):
+        url = 'http://steamcommunity.com/market/cancelbuyorder/'
+        values = {'sessionid' : self.sessionid,
+                  'buy_orderid' : buyorderid}
+        headers = {'Accept' : '*/*',
+                   'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
+                   'X-Requested-With' : 'XMLHttpRequest',
+                   'X-Prototype-Version' : '1.7',
+                   'Referer' : 'http://steamcommunity.com/market/listings/730/Chroma%202%20Case',
+                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+                   'Host' : 'steamcommunity.com',
+                   'Connection' : 'Keep-Alive',
+                   'Cache-Control' : 'no-cache'}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+
+        data = json.loads(response.decode('utf-8'))
+        return data
+
+# Command the bot here, this is just an example (explained below)!
 mybot = steamBot('username', 'password')
 mybot.getRSA()
 mybot.doLogin('')
 mybot.doLogin('emailauth')
-mybot.placeOrder(3, 730, 'Chroma 2 Case', 4, 1)
+buyorder = mybot.placeOrder(3, 730, 'Chroma 2 Case', 4, 1)
+if buyorder['success'] == 1:
+    buyorderid = buyorder['buy_orderid']
+    print(buyorderid)
+    print(mybot.cancelOrder(buyorderid))
+
+# This example is a pretty useless bot. All it does is login and then create a buy order, however on success, remove it immediately.
+# Next command up: get item listings so you can calculate your buy price
