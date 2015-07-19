@@ -1,7 +1,7 @@
 ![Steam icon](http://i.imgur.com/9ca9yl7.png) steamBot
 =====
 
-steamBot is a **Python(3)** module, it offers the user to create automated steam market bots that create offers themsleves depending on the current status of the market. No user participation is needed after the bot is coded correctly.
+steamBot is a **Python(3)** module, it offers the user to create automated steam market bots that create offers and bids themsleves depending on the current status of the market. No user participation is needed after the bot is coded correctly.
 
 ***
 The module is still being coded and is not even near to ready, this is what is already done:
