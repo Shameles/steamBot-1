@@ -67,7 +67,7 @@ class steamBot():
                   'captcha_text' : '' if type != 'captcha' else str(input('Please input the captcha')),
                   'emailsteamid' : '',
                   'rsatimestamp' : self.rsatimestamp,
-                  'remember_login' : 'false',
+                  'remember_login' : 'true',
                   'donotcache' : str(int(time.time()*1000))}
         headers = {}
         post = urllib.parse.urlencode(values)
@@ -100,9 +100,36 @@ class steamBot():
             else:
                 print('[X] Login details incorrect')
                 return False
+            
+    def placeOrder(self, valuta, itemid, markethash, price, quantity):
+        url = 'https://steamcommunity.com/market/createbuyorder/'
+        values = {'sessionid' : self.sessionid,
+                  'currency' : str(valuta),
+                  'appid' : str(itemid),
+                  'market_hash_name' : str(markethash),
+                  'price_total' : str(price),
+                  'quantity' : str(quantity)}
+        headers = {'Accept' : '*/*',
+                   'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
+                   'Referer' : 'http://steamcommunity.com/market/listings/730/Chroma%202%20Case',
+                   'Accept-Language' : 'nl-NL',
+                   'Origin' : 'http://steamcommunity.com',
+                   'Accept-Encoding' : 'gzip, deflate',
+                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+                   'Host' : 'steamcommunity.com',
+                   'Connection' : 'Keep-Alive',
+                   'Cache-Control' : 'no-cache'}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+        
+        #data = json.loads(response.decode('utf-8'))
+        return response.decode('utf-8')
 
-# Command the bot here
+# Command the bot here, this is just an example!
 mybot = steamBot('username', 'password')
 mybot.getRSA()
 mybot.doLogin('')
 mybot.doLogin('emailauth')
+mybot.placeOrder(3, 730, 'Chroma 2 Case', 4, 1)
