@@ -3,10 +3,11 @@ import http.cookiejar
 import json
 import time
 import base64
+import pickle
+import os.path
 import webbrowser
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
-
 
 # Construct and install the HTTP(cookiejar)-Opener
 cj = http.cookiejar.CookieJar()
@@ -14,10 +15,32 @@ opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 urllib.request.install_opener(opener)
 
 class steamBot():
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-    
+    def __init__(self):
+        if os.path.isfile('data.pkl'):
+            with open('data.pkl', 'rb') as input:
+                for c in range (6):
+                    cj.set_cookie(pickle.load(input))
+                for cookie in cj:
+                    if cookie.name == 'sessionid':
+                        self.sessionid = cookie.value
+        else:
+            with open('credentials.json', 'r') as credfile:
+                credentials = json.load(credfile)
+                self.username = credentials['username']
+                self.password = credentials['password']
+            
+            self.getSession()
+            self.getRSA()
+            self.doLogin('')
+            self.doLogin('emailauth')
+            
+            with open('data.pkl', 'wb') as output:
+                for cookie in cj:
+                    pickle.dump(cookie, output, -1)
+                    
+            
+
+    def getSession(self):
         url = 'http://steamcommunity.com/'
         values = {}
         post = urllib.parse.urlencode(values)
@@ -27,7 +50,6 @@ class steamBot():
         resp = urllib.request.urlopen(request)
 
         for cookie in cj:
-            print(cookie.name, cookie.value)
             if cookie.name == 'sessionid':
                 self.sessionid = cookie.value
             if cookie.name == 'steamCountry':
@@ -80,16 +102,10 @@ class steamBot():
         
         if data['success'] == True:
             self.securetoken = data['transfer_parameters']['token_secure']
-            print(self.securetoken)
             self.token = data['transfer_parameters']['token']
-            print(self.token)
             self.webcookie = data['transfer_parameters']['webcookie']
-            print(self.webcookie)
             self.auth = data['transfer_parameters']['auth']
-            print(self.auth)
 
-            for cookie in cj:
-                print(cookie.name, cookie.value)
             return True
         else:
             if data['emailauth_needed'] == True:
@@ -148,16 +164,14 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
         return data
 
-# Command the bot here, this is just an example (explained below)!
-mybot = steamBot('username', 'password')
-mybot.getRSA()
-mybot.doLogin('')
-mybot.doLogin('emailauth')
+# If you have saved cookies, this is a primitive example of a bot. More commands will follow.
+# This bot makes an order and then immediately deletes it. Hence the name UselessBot.
+mybot = steamBot()
 buyorder = mybot.placeOrder(3, 730, 'Chroma 2 Case', 4, 1)
+print(buyorder)
 if buyorder['success'] == 1:
     buyorderid = buyorder['buy_orderid']
     print(buyorderid)
-    print(mybot.cancelOrder(buyorderid))
+    mybot.cancelOrder(buyorderid)
 
-# This example is a pretty useless bot. All it does is login and then create a buy order, however on success, remove it immediately.
-# Next command up: get item listings so you can calculate your buy price
+
