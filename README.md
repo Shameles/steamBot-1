@@ -23,8 +23,14 @@ As said, not a lot has been done yet, this is what you can expect:
 ### License and ToS
 Not only does this repository have a license, but the steamBot might also not be in line with the Steam Terms of Service. The license is in the repository and you can check out the Steam Terms of Service [here][1].
 
-### Requirements.
+### Requirements
 
 Python 3 and the PyCrypto module to process the RSA key, and a logical mind. I am not sure if market bots are allowed, but logically thinking they aren't. So be cautious, as accounts **do** get banned.
+
+### Usage
+
+Since a recent update cookeis get stored. This means your bot doesn't have to log in over and over again. To create the cookies you must open credentials.json and fill in your credentials. Then run your bot and it will go through the login procedure. After this cookies *should* be stored in the data.pkl file. If not, either your credentials are incorrect or you have to fill in a captcha, which will be automatized later on.
+
+After this you can delete your credentials.json if that makes you feel saver. However, remember that when you need to create a new set of cookies you must delete the data.pkl and have credentials.json existing. Explanations of the commands will be added to a wiki later.
 
 [1]: http://store.steampowered.com/subscriber_agreement/
