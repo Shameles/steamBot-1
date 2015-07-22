@@ -56,9 +56,8 @@ class steamBot():
                 self.steamcountry = cookie.value
 
     def getRSA(self):
-
         url = 'https://steamcommunity.com/login/getrsakey/'
-        values = {'username' : 'icraftedyou', 'donotcache' : str(int(time.time()*1000))}
+        values = {'username' : self.username, 'donotcache' : str(int(time.time()*1000))}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         headers = {}
