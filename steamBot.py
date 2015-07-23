@@ -70,7 +70,7 @@ class steamBot():
 
         rsa_key = RSA.construct((mod, exp))
         rsa = PKCS1_v1_5.new(rsa_key)
-        self.encrypted_password = rsa.encrypt('Kat12345'.encode('utf-8'))
+        self.encrypted_password = rsa.encrypt(self.password.encode('utf-8'))
         self.encrypted_password = base64.b64encode(self.encrypted_password)
 
     def doLogin(self, type):
