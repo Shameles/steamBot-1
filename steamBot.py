@@ -9,37 +9,38 @@ import webbrowser
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-# Construct and install the HTTP(cookiejar)-Opener
-cj = http.cookiejar.CookieJar()
-opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-urllib.request.install_opener(opener)
-
 class steamBot():
     def __init__(self):
-        if os.path.isfile('data.pkl'):
-            with open('data.pkl', 'rb') as input:
+        self.cj = http.cookiejar.CookieJar()
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cj))
+        urllib.request.install_opener(self.opener)
+        self.inventory = {}
+        
+        if os.path.isfile('cookies.pkl'):
+            with open('cookies.pkl', 'rb') as input:
                 for c in range (6):
-                    cj.set_cookie(pickle.load(input))
-                for cookie in cj:
+                    self.cj.set_cookie(pickle.load(input))
+                for cookie in self.cj:
                     if cookie.name == 'sessionid':
                         self.sessionid = cookie.value
+            with open('credentials.json', 'r') as credfile:
+                credentials = json.load(credfile)
+                self.steamid = credentials['steamid']
+                
         else:
             with open('credentials.json', 'r') as credfile:
                 credentials = json.load(credfile)
                 self.username = credentials['username']
                 self.password = credentials['password']
-            
             self.getSession()
             self.getRSA()
             self.doLogin('')
             self.doLogin('emailauth')
             
-            with open('data.pkl', 'wb') as output:
-                for cookie in cj:
+            with open('cookies.pkl', 'wb') as output:
+                for cookie in self.cj:
                     pickle.dump(cookie, output, -1)
-                    
-            
-
+       
     def getSession(self):
         url = 'http://steamcommunity.com/'
         values = {}
@@ -48,12 +49,6 @@ class steamBot():
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
         resp = urllib.request.urlopen(request)
-
-        for cookie in cj:
-            if cookie.name == 'sessionid':
-                self.sessionid = cookie.value
-            if cookie.name == 'steamCountry':
-                self.steamcountry = cookie.value
 
     def getRSA(self):
         url = 'https://steamcommunity.com/login/getrsakey/'
@@ -100,10 +95,12 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
         
         if data['success'] == True:
-            self.securetoken = data['transfer_parameters']['token_secure']
-            self.token = data['transfer_parameters']['token']
-            self.webcookie = data['transfer_parameters']['webcookie']
-            self.auth = data['transfer_parameters']['auth']
+            self.steamid = data['transfer_parameters']['steamid']
+            with open('credentials.json', 'r') as file:
+                credentials = json.load(file)
+                credentials['steamid'] = self.steamid
+            with open('credentials.json', 'w') as outfile:
+                outfile.write(json.dumps(credentials, indent=4, sort_keys=True))
 
             return True
         else:
@@ -117,17 +114,17 @@ class steamBot():
                 print('[X] Login details incorrect')
                 return False
             
-    def placeOrder(self, valuta, itemid, markethash, price, quantity):
+    def placeOrder(self, valuta, appid, markethash, price, quantity):
         url = 'https://steamcommunity.com/market/createbuyorder/'
         values = {'sessionid' : self.sessionid,
                   'currency' : str(valuta),
-                  'appid' : str(itemid),
+                  'appid' : str(appid),
                   'market_hash_name' : str(markethash),
                   'price_total' : str(price),
                   'quantity' : str(quantity)}
         headers = {'Accept' : '*/*',
                    'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'Referer' : 'http://steamcommunity.com/market/listings/730/Chroma%202%20Case',
+                   'Referer' : 'http://steamcommunity.com/market/',
                    'Origin' : 'http://steamcommunity.com',
                    'Accept-Encoding' : 'gzip, deflate',
                    'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
@@ -150,7 +147,7 @@ class steamBot():
                    'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
                    'X-Requested-With' : 'XMLHttpRequest',
                    'X-Prototype-Version' : '1.7',
-                   'Referer' : 'http://steamcommunity.com/market/listings/730/Chroma%202%20Case',
+                   'Referer' : 'http://steamcommunity.com/market/',
                    'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
                    'Host' : 'steamcommunity.com',
                    'Connection' : 'Keep-Alive',
@@ -163,14 +160,128 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
         return data
 
-# If you have saved cookies, this is a primitive example of a bot. More commands will follow.
-# This bot makes an order and then immediately deletes it. Hence the name UselessBot.
-mybot = steamBot()
-buyorder = mybot.placeOrder(3, 730, 'Chroma 2 Case', 4, 1)
-print(buyorder)
-if buyorder['success'] == 1:
-    buyorderid = buyorder['buy_orderid']
-    print(buyorderid)
-    mybot.cancelOrder(buyorderid)
+    def getInventory(self, contextid):
+        url = 'http://steamcommunity.com/profiles/' + self.steamid + '/'
+        values = {}
+        headers = {}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        self.profile = urllib.request.urlopen(request).geturl()
+        
+        url = self.profile + '/inventory/json/' + str(contextid) + '/2/'
+        values = {}
+        headers = {}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+        data = json.loads(response.decode('utf-8'))
 
+        self.inventory[contextid] = {}
+        for item in data['rgInventory']:
+            self.inventory[contextid][item] = {}
+            for property in data['rgInventory'][item]:
+                self.inventory[contextid][item][property] = data['rgInventory'][item][property]
+            for property in data['rgDescriptions'][self.inventory[contextid][item]['classid'] + '_' + self.inventory[contextid][item]['instanceid']]:
+                self.inventory[contextid][item][property] = data['rgDescriptions'][self.inventory[contextid][item]['classid'] + '_' + self.inventory[contextid][item]['instanceid']][property]
+            for key in ['name_color', 'pos', 'type', 'icon_drag_url', 'icon_url', 'icon_url_large', 'market_actions', 'owner_descriptions', 'tags', 'descriptions', 'background_color', 'actions']:
+                self.inventory[contextid][item].pop(key, None)
+                
+        with open('inventory.json', 'w') as outfile:
+            outfile.write(json.dumps(self.inventory, indent=4, sort_keys=True))
 
+        return self.inventory
+
+    def getSupplyDemand(self, currency, item_nameid):
+        url = 'http://steamcommunity.com/market/itemordershistogram?country=EN&language=English&currency={0}&item_nameid={1}'.format(currency, item_nameid)
+        values = {}
+        headers = {}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+
+        data = json.loads(response.decode('utf-8'))
+        if data['success'] == 1:
+            supply = {}
+            demand = {}
+            for sellprice in data['sell_order_graph']:
+                supply[sellprice[0]] = sellprice[1]
+            for buyprice in data['buy_order_graph']:
+                demand[buyprice[0]] = buyprice[1]
+
+            return {'minsupply' : data['lowest_sell_order'],  'maxdemand' : data['highest_buy_order'], 'supply' : supply, 'demand': demand}   
+
+    def sellItem(self, appid, itemid, price, quantity):
+        url = 'https://steamcommunity.com/market/sellitem/'
+        values = {'sessionid' : self.sessionid,
+                  'appid' : str(appid),
+                  'contextid' : '2',
+                  'assetid' : str(itemid),
+                  'price' : str(price),
+                  'amount' : str(quantity)}
+        headers = {'Accept' : '*/*',
+                   'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
+                   'Referer' : 'http://steamcommunity.com/market/',
+                   'X-Requested-With' : 'XMLHttpRequest',
+                   'X-Prototype-Version' : '1.7',
+                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+                   'Host' : 'steamcommunity.com',
+                   'Connection' : 'Keep-Alive',
+                   'Cache-Control' : 'no-cache'}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+
+        data = json.loads(response.decode('utf-8'))
+        return data
+
+    def getMyListings(self):
+        url = 'http://steamcommunity.com/market/mylistings'
+        values = {}
+        headers = {}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+        
+        data = json.loads(response.decode('utf-8'))
+
+        listings = {}
+        templistings = data['hovers'].split(';')
+        for listing in templistings:
+            index = templistings.index(listing)
+            listing = listing[listing.find('('):listing.find(')') + 1]
+            listing = listing.replace('( g_rgAssets, ', '(')
+            if not 'image' in listing and listing is not '':
+                temp = listing.split(',')
+                temptwo = []
+                for i in temp:
+                    index = temp.index(i)
+                    i = i.replace(' ', '').replace('(', '').replace(')', '').replace("'", '')
+                    temptwo.append(i)
+                listings[temptwo[0].replace('mylisting_', '').replace('_name', '')] = [temptwo[1], temptwo[2], temptwo[3], temptwo[4]]
+                    
+        return listings
+
+    def removeListing(self, listingid):
+        url = 'http://steamcommunity.com/market/removelisting/' + str(listingid)
+        print(url)
+        values = {'sessionid' : self.sessionid}
+        headers = {'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
+                   'X-Requested-With' : 'XMLHttpRequest',
+                   'X-Prototype-Version' : '1.7',
+                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
+                   'Referer' : 'http://steamcommunity.com/market/',
+                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+                   'Host' : 'steamcommunity.com',
+                   'Connection' : 'Keep-Alive',
+                   'Cache-Control' : 'no-cache'}
+        post = urllib.parse.urlencode(values)
+        binary_data = post.encode('utf-8')
+        request = urllib.request.Request(url, binary_data, headers)
+        response = urllib.request.urlopen(request).read()
+
+# Nothing is here, what was here before will be moved to the wiki asap.
