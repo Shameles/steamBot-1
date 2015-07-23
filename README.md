@@ -28,7 +28,7 @@ Not only does this repository have a license, but the steamBot might also not be
 
 Python 3 and the PyCrypto module to process the RSA key, and a logical mind. I am not sure if market bots are allowed, but logically thinking they aren't. So be cautious, as accounts **do** get banned.
 
-<strike>### Usage</strike>
+### <strike>Usage</strike>
 
 Will be moved to wiki asap.
 
