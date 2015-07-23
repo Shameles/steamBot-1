@@ -1,4 +1,5 @@
 ![Steam icon](http://i.imgur.com/9ca9yl7.png) steamBot
+![Warning icon](http://i.imgur.com/CvxgTJc.png) the code is currently very basic and badly intertwined, therefore the code is not optimal/quite usuable until this warning is removed.
 =====
 
 steamBot is a **Python(3)** module, it offers the user to create automated steam market bots that create offers and bids themsleves depending on the current status of the market. No user participation is needed after the bot is coded correctly.
