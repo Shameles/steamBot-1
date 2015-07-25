@@ -5,6 +5,7 @@ import time
 import base64
 import pickle
 import os.path
+import random
 import webbrowser
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
@@ -32,10 +33,10 @@ class steamBot():
                 credentials = json.load(credfile)
                 self.username = credentials['username']
                 self.password = credentials['password']
+                
             self.getSession()
             self.getRSA()
             self.doLogin('')
-            self.doLogin('emailauth')
             
             with open('cookies.pkl', 'wb') as output:
                 for cookie in self.cj:
@@ -43,30 +44,23 @@ class steamBot():
        
     def getSession(self):
         url = 'http://steamcommunity.com/'
-        values = {}
-        post = urllib.parse.urlencode(values)
-        headers = {}
-        binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
-        resp = urllib.request.urlopen(request)
+        request = urllib.request.Request(url)
+        response = urllib.request.urlopen(request)
 
     def getRSA(self):
         url = 'https://steamcommunity.com/login/getrsakey/'
         values = {'username' : self.username, 'donotcache' : str(int(time.time()*1000))}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
-        headers = {}
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url, binary_data)
         response = urllib.request.urlopen(request).read()
 
         data = json.loads(response.decode('utf-8'))
 
         self.rsatimestamp = data['timestamp']
-        mod = int(str(data['publickey_mod']), 16)
-
-        exp = int(str(data['publickey_exp']), 16)
-
         steamid = data['steamid']
+        mod = int(str(data['publickey_mod']), 16)
+        exp = int(str(data['publickey_exp']), 16)
 
         rsa_key = RSA.construct((mod, exp))
         rsa = PKCS1_v1_5.new(rsa_key)
@@ -75,25 +69,27 @@ class steamBot():
 
     def doLogin(self, type):
         url = 'https://steamcommunity.com/login/dologin'
+        if 'email' in type:
+            self.emailkey = input('INPUT KEY FROM E-MAIL: ')
+        if 'captcha' in type:
+            webbrowser.open('http://steamcommunity.com/public/captcha.php?gid=' + self.captchagid)
+            self.captchakey = input('PLEASE INPUT THE CAPTCHA: ')
         values = {'password' : self.encrypted_password.decode('utf-8'),
                   'username' : self.username,
                   'twofactorcode' : '',
-                  'emailauth' : '' if type != 'emailauth' else str(input('Please input the key you received by e-mail: ')),
+                  'emailauth' : self.emailkey if 'email' in type else '',
                   'loginfriendlyname' : '',
-                  'captchagid' : '-1' if type != 'captcha' else self.captchagid,
-                  'captcha_text' : '' if type != 'captcha' else str(input('Please input the captcha')),
-                  'emailsteamid' : '',
+                  'captchagid' : self.captchagid if 'captcha' in type else '-1',
+                  'captcha_text' : self.captchakey if 'captcha' in type else '',
+                  'emailsteamid' : self.emailsteamid if 'email' in type else '',
                   'rsatimestamp' : self.rsatimestamp,
                   'remember_login' : 'true',
                   'donotcache' : str(int(time.time()*1000))}
-        headers = {}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url, binary_data)
         response = urllib.request.urlopen(request).read()
-
         data = json.loads(response.decode('utf-8'))
-        
         if data['success'] == True:
             self.steamid = data['transfer_parameters']['steamid']
             with open('credentials.json', 'r') as file:
@@ -104,13 +100,13 @@ class steamBot():
 
             return True
         else:
-            if data['emailauth_needed'] == True:
-                print('- Result: Email-authentication needed')
-                print('- E-mail: ...' + data['emaildomain'])
-                self.emailsteamid = str(data['emailsteamid'])
-                self.emaildomain = data['emaildomain']
-
-            else:
+            if 'emailsteamid' in data:
+                self.emailsteamid = data['emailsteamid']
+                self.doLogin('emailauth')
+            if data['message'].startswith('Please verify'):
+                self.captchagid = data['captcha_gid']
+                self.doLogin('captcha')
+            if data['message'] == 'Incorrect login':
                 print('[X] Login details incorrect')
                 return False
             
@@ -122,15 +118,7 @@ class steamBot():
                   'market_hash_name' : str(markethash),
                   'price_total' : str(price),
                   'quantity' : str(quantity)}
-        headers = {'Accept' : '*/*',
-                   'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'Referer' : 'http://steamcommunity.com/market/',
-                   'Origin' : 'http://steamcommunity.com',
-                   'Accept-Encoding' : 'gzip, deflate',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache'}
+        headers = {'Referer' : 'http://steamcommunity.com/market/'}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
@@ -143,15 +131,7 @@ class steamBot():
         url = 'http://steamcommunity.com/market/cancelbuyorder/'
         values = {'sessionid' : self.sessionid,
                   'buy_orderid' : buyorderid}
-        headers = {'Accept' : '*/*',
-                   'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Referer' : 'http://steamcommunity.com/market/',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache'}
+        headers = {'Referer' : 'http://steamcommunity.com/market/'}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
@@ -162,19 +142,11 @@ class steamBot():
 
     def getInventory(self, contextid):
         url = 'http://steamcommunity.com/profiles/' + self.steamid + '/'
-        values = {}
-        headers = {}
-        post = urllib.parse.urlencode(values)
-        binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url)
         self.profile = urllib.request.urlopen(request).geturl()
         
         url = self.profile + '/inventory/json/' + str(contextid) + '/2/'
-        values = {}
-        headers = {}
-        post = urllib.parse.urlencode(values)
-        binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url)
         response = urllib.request.urlopen(request).read()
         data = json.loads(response.decode('utf-8'))
 
@@ -195,11 +167,7 @@ class steamBot():
 
     def getSupplyDemand(self, currency, item_nameid):
         url = 'http://steamcommunity.com/market/itemordershistogram?country=EN&language=English&currency={0}&item_nameid={1}'.format(currency, item_nameid)
-        values = {}
-        headers = {}
-        post = urllib.parse.urlencode(values)
-        binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url)
         response = urllib.request.urlopen(request).read()
 
         data = json.loads(response.decode('utf-8'))
@@ -238,13 +206,9 @@ class steamBot():
         data = json.loads(response.decode('utf-8'))
         return data
 
-    def getMyListings(self):
+    def getListings(self):
         url = 'http://steamcommunity.com/market/mylistings'
-        values = {}
-        headers = {}
-        post = urllib.parse.urlencode(values)
-        binary_data = post.encode('utf-8')
-        request = urllib.request.Request(url, binary_data, headers)
+        request = urllib.request.Request(url)
         response = urllib.request.urlopen(request).read()
         
         data = json.loads(response.decode('utf-8'))
@@ -268,20 +232,39 @@ class steamBot():
 
     def removeListing(self, listingid):
         url = 'http://steamcommunity.com/market/removelisting/' + str(listingid)
-        print(url)
         values = {'sessionid' : self.sessionid}
-        headers = {'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Requested-With' : 'XMLHttpRequest',
-                   'X-Prototype-Version' : '1.7',
-                   'Accept' : 'text/javascript, text/html, application/xml, text/xml, */*',
-                   'Referer' : 'http://steamcommunity.com/market/',
-                   'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-                   'Host' : 'steamcommunity.com',
-                   'Connection' : 'Keep-Alive',
-                   'Cache-Control' : 'no-cache'}
+        headers = {'Referer' : 'http://steamcommunity.com/market/'}
         post = urllib.parse.urlencode(values)
         binary_data = post.encode('utf-8')
         request = urllib.request.Request(url, binary_data, headers)
         response = urllib.request.urlopen(request).read()
+
+    def sendMessage(self, message, person):
+        # This function will be improved asap.
+        if self.chat == False:
+            url = 'http://steamcommunity.com/chat'
+            request = urllib.request.Request(url)
+            response = urllib.request.urlopen(request).read().decode('utf-8')
+            self.apikey = response[response.find("'https://api.steampowered.com/'") + 34:response.find("'https://api.steampowered.com/'") + 66]
+            self.friends = json.loads(response[response.find('[{"m_unAccountID"'):response.find('$J( InitializeChat );') - 12] + ']')
+            self.chat = True
+
+            self.jquery = ''.join(random.choice('0123456789') for i in range(22))
+            self.timestamp = str(int(time.time()*1000))
+                                  
+            url = 'https://api.steampowered.com/ISteamWebUserPresenceOAuth/Logon/v0001/?jsonp=jQuery' + self.jquery + '_' + self.timestamp + '&ui_mode=web&access_token=' + self.apikey + '&_=' + self.timestamp
+            request = urllib.request.Request(url)
+            response = urllib.request.urlopen(request).read().decode('utf-8')
+            logondata = json.loads(response[ response.index("(") + 1 : response.rindex(")") ])
+            self.umqid = logondata['umqid'] 
+            
+        for friend in self.friends:
+            if friend['m_strName'] == person:
+                self.dst = friend['m_ulSteamID']
+                
+        self.timestamp = str(int(time.time()*1000))
+        url = 'https://api.steampowered.com/ISteamWebUserPresenceOAuth/Message/v0001/?jsonp=jQuery' + self.jquery + '_' + self.timestamp + '&umqid=' + self.umqid + '&type=saytext&steamid_dst=' + self.dst + '&text=' + urllib.parse.quote_plus(message) +'&access_token=' + self.apikey + '&_=' + self.timestamp
+        request = urllib.request.Request(url)
+        response = urllib.request.urlopen(request)
 
 # Nothing is here, what was here before will be moved to the wiki asap.
